@@ -1,1 +1,1 @@
-python .\food_volume_estimation\volume_estimator.py --input_images .\assets\readme_assets\examples\rice_example.jpg --depth_model_architecture .\weights\monovideo_fine_tune_food_videos.json --depth_model_weights .\weights\monovideo_fine_tune_food_videos.h5 --segmentation_weights .\weights\mask_rcnn_food_segmentation.h5
+python .\food_volume_estimation\volume_estimator.py --input_image .\food_volume_estimation\crop_img.png --depth_map .\food_volume_estimation\disp.png --seg_mask .\food_volume_estimation\mask.png
