@@ -17,52 +17,52 @@ from food_volume_estimation.ellipse_detection.ellipse_detector import EllipseDet
 from food_volume_estimation.point_cloud_utils import *
 
 
-# class DensityDatabase():
-#     """Density Database searcher object. Food types are expected to be
-#     in column 1, food densities in column 2."""
-#     def __init__(self, db_path):
-#         """Load food density database from file or Google Sheets ID.
+class DensityDatabase():
+    """Density Database searcher object. Food types are expected to be
+    in column 1, food densities in column 2."""
+    def __init__(self, db_path):
+        """Load food density database from file or Google Sheets ID.
 
-#         Inputs:
-#             db_path: Path to database excel file (.xlsx) or Google Sheets ID.
-#         """
-#         if os.path.exists(db_path):
-#             # Read density database from excel file
-#             self.density_database = pd.read_excel(
-#                 db_path, sheet_name=0, usecols=[0, 1])
-#         else:
-#             # Read density database from Google Sheets URL
-#             sheet = 'Sheet1'
-#             url = 'https://docs.google.com/spreadsheets/d/{0}/gviz/tq?tqx=out:csv&sheet={1}'.format(
-#                 db_path, sheet)
-#             self.density_database = pd.read_csv(url, usecols=[0, 1],
-#                                                 header=None)
-#         # Remove rows with NaN values
-#         self.density_database.dropna(inplace=True)
+        Inputs:
+            db_path: Path to database excel file (.xlsx) or Google Sheets ID.
+        """
+        if os.path.exists(db_path):
+            # Read density database from excel file
+            self.density_database = pd.read_excel(
+                db_path, sheet_name=0, usecols=[0, 1])
+        else:
+            # Read density database from Google Sheets URL
+            sheet = 'Sheet1'
+            url = 'https://docs.google.com/spreadsheets/d/{0}/gviz/tq?tqx=out:csv&sheet={1}'.format(
+                db_path, sheet)
+            self.density_database = pd.read_csv(url, usecols=[0, 1],
+                                                header=None)
+        # Remove rows with NaN values
+        self.density_database.dropna(inplace=True)
 
-#     def query(self, food):
-#         """Search for food density in database.
+    def query(self, food):
+        """Search for food density in database.
 
-#         Inputs:
-#             food: Food type to search for.
+        Inputs:
+            food: Food type to search for.
 
-#         Returns:
-#             db_entry_vals: Array containing the matched food type
-#             and its density.
-#         """
-#         try:
-#             # Search for matching food in database
-#             match = process.extractOne(food, self.density_database.values[:,0],
-#                                        scorer=fuzz.partial_ratio,
-#                                        score_cutoff=80)
-#             db_entry = (
-#                 self.density_database.loc[
-#                 self.density_database[
-#                 self.density_database.columns[0]] == match[0]])
-#             db_entry_vals = db_entry.values
-#             return db_entry_vals[0]
-#         except:
-#             return ['None', 1]
+        Returns:
+            db_entry_vals: Array containing the matched food type
+            and its density.
+        """
+        try:
+            # Search for matching food in database
+            match = process.extractOne(food, self.density_database.values[:,0],
+                                       scorer=fuzz.partial_ratio,
+                                       score_cutoff=80)
+            db_entry = (
+                self.density_database.loc[
+                self.density_database[
+                self.density_database.columns[0]] == match[0]])
+            db_entry_vals = db_entry.values
+            return db_entry_vals[0]
+        except:
+            return ['None', 1]
 
 
 class VolumeEstimator():
@@ -81,39 +81,39 @@ class VolumeEstimator():
             self.args = self.__parse_args()
 
             # Load depth estimation model
-            # custom_losses = Losses()
-            # objs = {'ProjectionLayer': ProjectionLayer,
-            #         'ReflectionPadding2D': ReflectionPadding2D,
-            #         'InverseDepthNormalization': InverseDepthNormalization,
-            #         'AugmentationLayer': AugmentationLayer,
-            #         'compute_source_loss': custom_losses.compute_source_loss}
-            # with open(self.args.depth_model_architecture, 'r') as read_file:
-            #     model_architecture_json = json.load(read_file)
-            #     self.monovideo = model_from_json(model_architecture_json,
-            #                                      custom_objects=objs)
-            # self.__set_weights_trainable(self.monovideo, False)
-            # self.monovideo.load_weights(self.args.depth_model_weights)
-            # self.model_input_shape = (
-            #     self.monovideo.inputs[0].shape.as_list()[1:])
-            # depth_net = self.monovideo.get_layer('depth_net')
-            # self.depth_model = Model(inputs=depth_net.inputs,
-            #                          outputs=depth_net.outputs,
-            #                          name='depth_model')
-            # print('[*] Loaded depth estimation model.')
-            # # Depth model configuration
-            # self.min_disp = 1 / self.args.max_depth
-            # self.max_disp = 1 / self.args.min_depth
-            # self.gt_depth_scale = self.args.gt_depth_scale
+            custom_losses = Losses()
+            objs = {'ProjectionLayer': ProjectionLayer,
+                    'ReflectionPadding2D': ReflectionPadding2D,
+                    'InverseDepthNormalization': InverseDepthNormalization,
+                    'AugmentationLayer': AugmentationLayer,
+                    'compute_source_loss': custom_losses.compute_source_loss}
+            with open(self.args.depth_model_architecture, 'r') as read_file:
+                model_architecture_json = json.load(read_file)
+                self.monovideo = model_from_json(model_architecture_json,
+                                                 custom_objects=objs)
+            self.__set_weights_trainable(self.monovideo, False)
+            self.monovideo.load_weights(self.args.depth_model_weights)
+            self.model_input_shape = (
+                self.monovideo.inputs[0].shape.as_list()[1:])
+            depth_net = self.monovideo.get_layer('depth_net')
+            self.depth_model = Model(inputs=depth_net.inputs,
+                                     outputs=depth_net.outputs,
+                                     name='depth_model')
+            print('[*] Loaded depth estimation model.')
+            # Depth model configuration
+            self.min_disp = 1 / self.args.max_depth
+            self.max_disp = 1 / self.args.min_depth
+            self.gt_depth_scale = self.args.gt_depth_scale
 
-            # # Create segmentator object
-            # self.segmentator = FoodSegmentator(self.args.segmentation_weights)
+            # Create segmentator object
+            self.segmentator = FoodSegmentator(self.args.segmentation_weights)
 
             # Plate adjustment relaxation parameter
             self.relax_param = self.args.relaxation_param
 
             # If given initialize food density database 
-            # if self.args.density_db is not None:
-            #     self.density_db = DensityDatabase(self.args.density_db)
+            if self.args.density_db is not None:
+                self.density_db = DensityDatabase(self.args.density_db)
 
 
     def __parse_args(self):
@@ -125,32 +125,23 @@ class VolumeEstimator():
         # Parse command line arguments
         parser = argparse.ArgumentParser(
             description='Estimate food volume in input images.')
-        parser.add_argument('--input_image', type=str, nargs='+',
-                            help='Paths to input image.',
-                            metavar='/path/to/image',
+        parser.add_argument('--input_images', type=str, nargs='+',
+                            help='Paths to input images.',
+                            metavar='/path/to/image1 /path/to/image2 ...',
                             required=True)
-        parser.add_argument('--depth_map', type=str, nargs='+',
-                            help='Paths to deph map',
-                            metavar='/path/to/map',
+        parser.add_argument('--depth_model_architecture', type=str,
+                            help=('Depth estimation model '
+                                  'architecture (.json).'),
+                            metavar='/path/to/architecture.json',
                             required=True)
-        parser.add_argument('--seg_mask', type=str, nargs='+',
-                            help='Paths to seg_mask',
-                            metavar='/path/to/seg_mask',
+        parser.add_argument('--depth_model_weights', type=str,
+                            help='Depth estimation model weights (.h5).',
+                            metavar='/path/to/weights.h5',
                             required=True)
-                        
-        # parser.add_argument('--depth_model_architecture', type=str,
-        #                     help=('Depth estimation model '
-        #                           'architecture (.json).'),
-        #                     metavar='/path/to/architecture.json',
-        #                     required=True)
-        # parser.add_argument('--depth_model_weights', type=str,
-        #                     help='Depth estimation model weights (.h5).',
-        #                     metavar='/path/to/weights.h5',
-        #                     required=True)
-        # parser.add_argument('--segmentation_weights', type=str,
-        #                     help='Food segmentation model weights (.h5).',
-        #                     metavar='/path/to/weights.h5',
-        #                     required=True)
+        parser.add_argument('--segmentation_weights', type=str,
+                            help='Food segmentation model weights (.h5).',
+                            metavar='/path/to/weights.h5',
+                            required=True)
         parser.add_argument('--fov', type=float,
                             help='Camera Field of View (in deg).',
                             metavar='<fov>',
@@ -187,21 +178,21 @@ class VolumeEstimator():
                             help='Directory to save plots at (.png).',
                             metavar='/path/to/plot/directory/',
                             default=None)
-        # parser.add_argument('--density_db', type=str,
-        #                     help=('Path to food density database (.xlsx) ' +
-        #                           'or Google Sheets ID.'),
-        #                     metavar='/path/to/plot/database.xlsx or <ID>',
-        #                     default=None)
-        # parser.add_argument('--food_type', type=str,
-        #                     help='Food type to calculate weight for.',
-        #                     metavar='<food_type>',
-        #                     default=None)
+        parser.add_argument('--density_db', type=str,
+                            help=('Path to food density database (.xlsx) ' +
+                                  'or Google Sheets ID.'),
+                            metavar='/path/to/plot/database.xlsx or <ID>',
+                            default=None)
+        parser.add_argument('--food_type', type=str,
+                            help='Food type to calculate weight for.',
+                            metavar='<food_type>',
+                            default=None)
         args = parser.parse_args()
         
 
         return args
 
-    def estimate_volume(self, input_image, depth_map, segmentation_mask, fov=72,  plate_diameter_prior=0,
+    def estimate_volume(self, input_image, fov=70,  plate_diameter_prior=0.3,
             plot_results=False, plots_directory=None):
         """Volume estimation procedure.
 
@@ -215,20 +206,14 @@ class VolumeEstimator():
             estimated_volume: Estimated volume.
         """
         # Load input image and resize to model input size
-        img = cv2.imread(input_image[0], cv2.IMREAD_COLOR)
-
-        # input_image_shape = (800, 1280)
-
-        # self.model_input_shape = input_image_shape
-
-        # img = cv2.resize(img, (self.model_input_shape[1],
-        #                        self.model_input_shape[0]))
-        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) / 255
-
-        # img = cv2.imread(input_image, 1)
-
-        input_image_shape = (310, 500)
-        self.model_input_shape = input_image_shape
+        if isinstance(input_image, str):
+            img = cv2.imread(input_image, cv2.IMREAD_COLOR)
+        else:
+            img = input_image
+        input_image_shape = img.shape
+        img = cv2.resize(img, (self.model_input_shape[1],
+                               self.model_input_shape[0]))
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) / 255
 
         # Create intrinsics matrix
         intrinsics_mat = self.__create_intrinsics_matrix(input_image_shape,
@@ -236,22 +221,11 @@ class VolumeEstimator():
         intrinsics_inv = np.linalg.inv(intrinsics_mat)
 
         # Predict depth
-        # img_batch = np.reshape(img, (1,) + img.shape)
-        # inverse_depth = self.depth_model.predict(img_batch)[0][0,:,:,0] 
-        # disparity_map = (self.min_disp + (self.max_disp - self.min_disp) 
-        #                  * inverse_depth)
-        
-        
-        # depth = depth_map
-
-        disp = cv2.imread(depth_map[0], 0)
-        # print("*"*20)
-        # print(disp.shape)
-        mask = cv2.imread(segmentation_mask[0], 0)
-
-        disparity_map = np.array(disp, dtype = np.float)
+        img_batch = np.reshape(img, (1,) + img.shape)
+        inverse_depth = self.depth_model.predict(img_batch)[0][0,:,:,0] 
+        disparity_map = (self.min_disp + (self.max_disp - self.min_disp) 
+                         * inverse_depth)
         depth = 1 / disparity_map
-        
         # Convert depth map to point cloud
         depth_tensor = K.variable(np.expand_dims(depth, 0))
         intrinsics_inv_tensor = K.variable(np.expand_dims(intrinsics_inv, 0))
@@ -264,58 +238,55 @@ class VolumeEstimator():
 
         # Find ellipse parameterss (cx, cy, a, b, theta) that 
         # describe the plate contour
-        # ellipse_scale = 2
-        # ellipse_detector = EllipseDetector(
-        #     (ellipse_scale * self.model_input_shape[0],
-        #      ellipse_scale * self.model_input_shape[1]))
-        # ellipse_params = ellipse_detector.detect(input_image)
-        # ellipse_params_scaled = tuple(
-        #     [x / ellipse_scale for x in ellipse_params[:-1]]
-        #     + [ellipse_params[-1]])
+        ellipse_scale = 2
+        ellipse_detector = EllipseDetector(
+            (ellipse_scale * self.model_input_shape[0],
+             ellipse_scale * self.model_input_shape[1]))
+        ellipse_params = ellipse_detector.detect(input_image)
+        ellipse_params_scaled = tuple(
+            [x / ellipse_scale for x in ellipse_params[:-1]]
+            + [ellipse_params[-1]])
 
         # Scale depth map
-        # if (any(x != 0 for x in ellipse_params_scaled) and
-        #         plate_diameter_prior != 0):
-        #     print('[*] Ellipse parameters:', ellipse_params_scaled)
-        #     # Find the scaling factor to match prior 
-        #     # and measured plate diameters
-        #     plate_point_1 = [int(ellipse_params_scaled[2] 
-        #                      * np.sin(ellipse_params_scaled[4]) 
-        #                      + ellipse_params_scaled[1]), 
-        #                      int(ellipse_params_scaled[2] 
-        #                      * np.cos(ellipse_params_scaled[4]) 
-        #                      + ellipse_params_scaled[0])]
-        #     plate_point_2 = [int(-ellipse_params_scaled[2] 
-        #                      * np.sin(ellipse_params_scaled[4]) 
-        #                      + ellipse_params_scaled[1]),
-        #                      int(-ellipse_params_scaled[2] 
-        #                      * np.cos(ellipse_params_scaled[4]) 
-        #                      + ellipse_params_scaled[0])]
-        #     plate_point_1_3d = point_cloud[0, plate_point_1[0], 
-        #                                    plate_point_1[1], :]
-        #     plate_point_2_3d = point_cloud[0, plate_point_2[0], 
-        #                                    plate_point_2[1], :]
-        #     plate_diameter = np.linalg.norm(plate_point_1_3d 
-        #                                     - plate_point_2_3d)
-        #     scaling = plate_diameter_prior / plate_diameter
-        # else:
+        if (any(x != 0 for x in ellipse_params_scaled) and
+                plate_diameter_prior != 0):
+            print('[*] Ellipse parameters:', ellipse_params_scaled)
+            # Find the scaling factor to match prior 
+            # and measured plate diameters
+            plate_point_1 = [int(ellipse_params_scaled[2] 
+                             * np.sin(ellipse_params_scaled[4]) 
+                             + ellipse_params_scaled[1]), 
+                             int(ellipse_params_scaled[2] 
+                             * np.cos(ellipse_params_scaled[4]) 
+                             + ellipse_params_scaled[0])]
+            plate_point_2 = [int(-ellipse_params_scaled[2] 
+                             * np.sin(ellipse_params_scaled[4]) 
+                             + ellipse_params_scaled[1]),
+                             int(-ellipse_params_scaled[2] 
+                             * np.cos(ellipse_params_scaled[4]) 
+                             + ellipse_params_scaled[0])]
+            plate_point_1_3d = point_cloud[0, plate_point_1[0], 
+                                           plate_point_1[1], :]
+            plate_point_2_3d = point_cloud[0, plate_point_2[0], 
+                                           plate_point_2[1], :]
+            plate_diameter = np.linalg.norm(plate_point_1_3d 
+                                            - plate_point_2_3d)
+            scaling = plate_diameter_prior / plate_diameter
+        else:
             # Use the median ground truth depth scaling when not using
             # the plate contour
-        print('[*] No ellipse found. Scaling with expected median depth.')
-        self.gt_depth_scale = 0.35
-        predicted_median_depth = np.median(1 / disparity_map)
-        scaling = self.gt_depth_scale / predicted_median_depth
+            print('[*] No ellipse found. Scaling with expected median depth.')
+            predicted_median_depth = np.median(1 / disparity_map)
+            scaling = self.gt_depth_scale / predicted_median_depth
         depth = scaling * depth
         point_cloud = scaling * point_cloud
         point_cloud_flat = scaling * point_cloud_flat
 
         # Predict segmentation masks
-        # masks_array = self.segmentator.infer_masks(input_image)
-        # print('[*] Found {} food object(s) '
-        #       'in image.'.format(masks_array.shape[-1]))
+        masks_array = self.segmentator.infer_masks(input_image)
+        print('[*] Found {} food object(s) '
+              'in image.'.format(masks_array.shape[-1]))
 
-        masks_array = np.reshape(mask, (310, 500, 1))
-    
         # Iterate over all predicted masks and estimate volumes
         estimated_volumes = []
         for k in range(masks_array.shape[-1]):
@@ -323,15 +294,8 @@ class VolumeEstimator():
             object_mask = cv2.resize(masks_array[:,:,k], 
                                      (self.model_input_shape[1],
                                       self.model_input_shape[0]))
-            
-            print("*"*20)
-            print(img)
-            print(type(object_mask))
-
             object_img = (np.tile(np.expand_dims(object_mask, axis=-1),
                                      (1,1,3)) * img)
-
-            
             object_depth = object_mask * depth
             print("*"*20)
             print(depth.shape)
@@ -504,35 +468,32 @@ if __name__ == '__main__':
 
     # Iterate over input images to estimate volumes
     results = {'image_path': [], 'volumes': []}
-    # for input_image in estimator.args.input_images:
-    input_image = estimator.args.input_image
-    depth_map = estimator.args.depth_map
-    segmentation_mask = estimator.args.seg_mask
-    print('[*] Input:', input_image)
-    volumes = estimator.estimate_volume(
-        input_image, depth_map, segmentation_mask, estimator.args.fov, 
-        estimator.args.plate_diameter_prior, estimator.args.plot_results,
-        estimator.args.plots_directory)
+    for input_image in estimator.args.input_images:
+        print('[*] Input:', input_image)
+        volumes = estimator.estimate_volume(
+            input_image, estimator.args.fov, 
+            estimator.args.plate_diameter_prior, estimator.args.plot_results,
+            estimator.args.plots_directory)
 
-    # Store results per input image
-    results['image_path'].append(input_image)
-    if (estimator.args.plot_results 
-        or estimator.args.plots_directory is not None):
-        results['volumes'].append([x[0] * 1000 for x in volumes])
-        plt.close('all')
-    else:
-        results['volumes'].append(volumes * 1000)
+        # Store results per input image
+        results['image_path'].append(input_image)
+        if (estimator.args.plot_results 
+            or estimator.args.plots_directory is not None):
+            results['volumes'].append([x[0] * 1000 for x in volumes])
+            plt.close('all')
+        else:
+            results['volumes'].append(volumes * 1000)
 
-    # Print weight if density database is given
-    # if estimator.args.density_db is not None:
-    #     db_entry = estimator.density_db.query(
-    #         estimator.args.food_type)
-    #     density = db_entry[1]
-    #     print('[*] Density database match:', db_entry)
-    #     # All foods found in the input image are considered to be
-    #     # of the same type
-    #     for v in results['volumes'][-1]:
-    #         print('[*] Food weight:', 1000 * v * density, 'g')
+        # Print weight if density database is given
+        if estimator.args.density_db is not None:
+            db_entry = estimator.density_db.query(
+                estimator.args.food_type)
+            density = db_entry[1]
+            print('[*] Density database match:', db_entry)
+            # All foods found in the input image are considered to be
+            # of the same type
+            for v in results['volumes'][-1]:
+                print('[*] Food weight:', 1000 * v * density, 'g')
 
     if estimator.args.results_file is not None:
         # Save results in CSV format

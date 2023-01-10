@@ -23,7 +23,7 @@ def linear_plane_estimation(points):
     return params
 
 def pca_plane_estimation(points):
-    """Find the plane that best fits the input poitns using PCA.
+    """Find the plane that best fits the input points using PCA.
 
     Inputs:
         points: Input points Mx3.
